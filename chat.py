@@ -18,6 +18,10 @@ CHAT_DB = "chat_history.db"
 UDP_PORT = 54545
 TEAM_NAME = "CryptoCrafters"  # Hardcoded team name
 
+# Broadcast IP can be customized to target a specific network segment.
+# For LAN, "<broadcast>" works for most systems. For WAN/NAT, port forwarding is required.
+BROADCAST_IP = "<broadcast>"
+
 # Generate or load encryption key
 if not os.path.exists(KEY_FILE):
     key = Fernet.generate_key()
@@ -75,6 +79,7 @@ class Peer:
         self.port = port
         self.peers = load_peers()
         self.running = True
+        # Start threads for TCP server, UDP broadcast/listener, and checking peer status.
         threading.Thread(target=self.start_server, daemon=True).start()
         threading.Thread(target=self.udp_broadcast, daemon=True).start()
         threading.Thread(target=self.udp_listener, daemon=True).start()
@@ -83,7 +88,12 @@ class Peer:
     def start_server(self):
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        server.bind(("0.0.0.0", self.port))
+        try:
+            server.bind(("0.0.0.0", self.port))
+        except Exception as e:
+            print(f"Error binding server on port {self.port}: {e}")
+            self.running = False
+            return
         server.listen(5)
         print(f"Server listening on port {self.port}...")
         while self.running:
@@ -102,18 +112,22 @@ class Peer:
                     break
                 decrypted_message = encryptor.decrypt(message).decode()
                 # Parse the message
-                sender_ip_port, sender_team_name, msg = decrypted_message.split(maxsplit=2)
-                print(f"{sender_ip_port} {sender_team_name} {msg}")
+                try:
+                    sender_ip_port, sender_team_name, msg = decrypted_message.split(maxsplit=2)
+                except ValueError:
+                    print("Received malformed message from", addr)
+                    continue
+                print(f"Received from {sender_ip_port} ({sender_team_name}): {msg}")
                 save_message(sender_ip_port, msg)
-                # Avoid duplicate entries
-                if sender_ip_port not in self.peers:
-                    self.peers[sender_ip_port] = (ip, port)
-                    save_peers(self.peers)
-                # Handle "exit" message
+                # Update peers information (dynamic IP update)
+                self.peers[sender_ip_port] = (ip, port)
+                save_peers(self.peers)
+                # Handle "exit" message: remove peer if requested
                 if msg.strip().lower() == "exit":
-                    print(f"{sender_ip_port} disconnected.")
-                    del self.peers[sender_ip_port]
-                    save_peers(self.peers)
+                    print(f"{sender_ip_port} requested disconnection.")
+                    if sender_ip_port in self.peers:
+                        del self.peers[sender_ip_port]
+                        save_peers(self.peers)
                     break
             except Exception as e:
                 print("Connection Error:", e)
@@ -125,10 +139,13 @@ class Peer:
         try:
             client.connect((target_ip, target_port))
             # Format the message as per the requirement
-            formatted_message = f"{socket.gethostbyname(socket.gethostname())}:{self.port} {TEAM_NAME} {message}"
+            local_ip = socket.gethostbyname(socket.gethostname())
+            formatted_message = f"{local_ip}:{self.port} {TEAM_NAME} {message}"
             encrypted_message = encryptor.encrypt(formatted_message.encode())
             client.send(encrypted_message)
-            self.peers[f"{target_ip}:{target_port}"] = (target_ip, target_port)
+            # Update peer info with the latest target details.
+            peer_id = f"{target_ip}:{target_port}"
+            self.peers[peer_id] = (target_ip, target_port)
             save_peers(self.peers)
             print(f"Message sent to {target_ip}:{target_port}")
         except Exception as e:
@@ -137,14 +154,15 @@ class Peer:
             client.close()
 
     def connect_to_peer(self, target_ip, target_port):
+        client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             client.connect((target_ip, target_port))
-            # Send a connection message
-            connection_message = f"{socket.gethostbyname(socket.gethostname())}:{self.port} {TEAM_NAME} Connection established"
+            local_ip = socket.gethostbyname(socket.gethostname())
+            connection_message = f"{local_ip}:{self.port} {TEAM_NAME} Connection established"
             encrypted_message = encryptor.encrypt(connection_message.encode())
             client.send(encrypted_message)
-            self.peers[f"{target_ip}:{target_port}"] = (target_ip, target_port)
+            peer_id = f"{target_ip}:{target_port}"
+            self.peers[peer_id] = (target_ip, target_port)
             save_peers(self.peers)
             print(f"Connected to {target_ip}:{target_port}")
         except Exception as e:
@@ -157,52 +175,69 @@ class Peer:
         udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         message = f"{self.name}:{self.port}"
         while self.running:
-            udp_sock.sendto(encryptor.encrypt(message.encode()), ('<broadcast>', UDP_PORT))
+            try:
+                udp_sock.sendto(encryptor.encrypt(message.encode()), (BROADCAST_IP, UDP_PORT))
+            except Exception as e:
+                print("UDP Broadcast Error:", e)
             time.sleep(5)
 
     def udp_listener(self):
         udp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         udp_sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        udp_sock.bind(("", UDP_PORT))
-        last_seen = {}
+        try:
+            udp_sock.bind(("", UDP_PORT))
+        except Exception as e:
+            print(f"Error binding UDP listener on port {UDP_PORT}: {e}")
+            self.running = False
+            return
+
+        discovered_peers = set()  # Track which peers have been printed already
         while self.running:
             try:
                 data, addr = udp_sock.recvfrom(1024)
-                peer_info = encryptor.decrypt(data).decode().split(":")
+                decrypted = encryptor.decrypt(data).decode()
+                peer_info = decrypted.split(":")
                 if len(peer_info) != 2:
                     continue
                 peer_name, peer_port = peer_info
                 peer_ip = addr[0]
                 peer_port = int(peer_port)
-                if f"{peer_ip}:{peer_port}" in self.peers:
-                    continue
-                current_time = time.time()
-                if peer_ip in last_seen and current_time - last_seen[peer_ip] < 10:
-                    continue
-                self.peers[f"{peer_ip}:{peer_port}"] = (peer_ip, peer_port)
-                last_seen[peer_ip] = current_time
+                peer_id = f"{peer_ip}:{peer_port}"
+
+                # Update dynamic peer information regardless
+                self.peers[peer_id] = (peer_ip, peer_port)
                 save_peers(self.peers)
-                print(f"Discovered peer {peer_name} at {peer_ip}:{peer_port}")
+
+                # Only print if the peer has not been discovered before
+                if peer_id not in discovered_peers:
+                    discovered_peers.add(peer_id)
+                    print(f"Discovered peer {peer_name} at {peer_ip}:{peer_port}")
             except Exception as e:
-                print(f"UDP Listener Error: {e}")
+                print("UDP Listener Error:", e)
 
     def check_peer_status(self):
         while self.running:
             time.sleep(10)
-            for peer_ip_port in list(self.peers.keys()):
-                ip, port = self.peers[peer_ip_port]
+            for peer_id in list(self.peers.keys()):
+                ip, port = self.peers[peer_id]
                 if not self.is_peer_active(ip, port):
-                    print(f"Peer {peer_ip_port} is offline.")
-                    del self.peers[peer_ip_port]
+                    print(f"Peer {peer_id} appears offline, removing from list.")
+                    del self.peers[peer_id]
                     save_peers(self.peers)
 
     def is_peer_active(self, ip, port):
-        try:
-            sock = socket.create_connection((ip, port), timeout=2)
-            sock.close()
-            return True
-        except:
-            return False
+        retries = 3
+        timeout = 5  # Increase timeout to 5 seconds
+        for attempt in range(1, retries + 1):
+            try:
+                sock = socket.create_connection((ip, port), timeout=timeout)
+                sock.close()
+                return True
+            except Exception as e:
+                print(f"Attempt {attempt} to connect to {ip}:{port} failed: {e}")
+                time.sleep(1)  # brief pause before retrying
+        # After retries, assume the peer is offline.
+        return False
 
     def start(self):
         while self.running:
@@ -210,12 +245,16 @@ class Peer:
             print("1. Send message")
             print("2. Query active peers")
             print("3. View chat history")
-            print("4. Connect to active peers")
+            print("4. Connect to active peer")
             print("0. Quit")
             choice = input("Enter choice: ")
             if choice == "1":
                 target_ip = input("Enter recipient's IP: ")
-                target_port = int(input("Enter recipient's port number: "))
+                try:
+                    target_port = int(input("Enter recipient's port number: "))
+                except ValueError:
+                    print("Invalid port number.")
+                    continue
                 message = input("Enter your message: ")
                 self.send_message(target_ip, target_port, message)
             elif choice == "2":
@@ -229,7 +268,11 @@ class Peer:
                 conn.close()
             elif choice == "4":
                 target_ip = input("Enter peer's IP: ")
-                target_port = int(input("Enter peer's port number: "))
+                try:
+                    target_port = int(input("Enter peer's port number: "))
+                except ValueError:
+                    print("Invalid port number.")
+                    continue
                 self.connect_to_peer(target_ip, target_port)
             elif choice == "0":
                 self.running = False
@@ -237,10 +280,11 @@ class Peer:
 
     def query_active_peers(self):
         print("Connected Peers:")
-        for peer_ip_port in self.peers:
-            print(peer_ip_port)
-        if not self.peers:
-            print("No connected peers")
+        if self.peers:
+            for peer_id in self.peers:
+                print(peer_id, "->", self.peers[peer_id])
+        else:
+            print("No connected peers.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
