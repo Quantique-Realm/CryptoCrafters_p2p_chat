@@ -46,7 +46,7 @@ Once the program starts, the following options are available:
 ## File Structure
 ```
 📂 PeerChat
- ├── peer_chat.py        # Main script for peer-to-peer communication
+ ├── chat.py        # Main script for peer-to-peer communication
  ├── secret.key          # AES encryption key
  ├── private.pem         # RSA private key
  ├── public.pem          # RSA public key
