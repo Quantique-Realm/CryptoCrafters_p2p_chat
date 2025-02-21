@@ -17,6 +17,7 @@ Ensure you have Python installed along with the required dependencies.
 
 ```bash
 pip install cryptography pycryptodome
+pip install argparse
 ```
 
 ### Running the Peer
