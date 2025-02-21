@@ -1,87 +1,63 @@
-# p2p_chat
-Blockchain project to implement p2p chat system
-terminal 1 output
-(.venv) PS C:\Users\harsh\PyCharm_Project\p2p_chat> python chat.py --name Peer1 --port 8080
-Server listening on port 8080...
+# P2P Encrypted Chat Application
 
-***** Menu *****
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-0. Quit
-Enter choice: Discovered peer Peer1 at 10.18.3.172:8080
-Discovered peer Peer2 at 10.18.3.172:9090
-Discovered peer Peer3 at 10.18.3.172:7070
-1
-Enter recipient's IP: 127.0.0.1
-Enter recipient's port number: 9090
-Enter your message: Hello Peer2
-Message sent to 127.0.0.1:9090
+## Overview
+This is a **Peer-to-Peer Encrypted Chat Application** that enables secure communication between users over a decentralized network. It employs **AES and RSA encryption** to ensure end-to-end security and uses **UDP-based peer discovery** for dynamic connections.
 
-***** Menu *****
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-0. Quit
-Enter choice: 4
-Enter peer's IP: 127.0.0.1
-Enter peer's port number: 7070
-Connected to 127.0.0.1:7070
+## Features
+- **End-to-End Encryption:** Messages are encrypted using **AES (Fernet)**, and RSA keys (2048-bit) provide additional security.
+- **Peer Discovery & Connection:** UDP broadcasting allows peers to dynamically find and connect with each other.
+- **Persistent Chat History:** Stores encrypted messages in an **SQLite database (`chat_history.db`)**.
+- **Multi-threaded Server:** Handles multiple clients simultaneously using TCP sockets.
+- **Automatic Peer Monitoring:** Regularly checks for active peers and removes inactive ones.
 
-***** Menu *****
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-0. Quit
-Enter choice:
+## Encryption Mechanism
+- **AES (Fernet Encryption):** Used for encrypting and decrypting chat messages securely.
+- **RSA (Public/Private Key Encryption):** Provides key exchange and authentication.
 
-terminal 2
-(.venv) PS C:\Users\harsh\PyCharm_Project\p2p_chat> python chat.py --name Peer2 --port 9090
-Server listening on port 9090...
+## P2P Communication
+- **UDP Broadcasting & Listening:** Peers broadcast their availability every **5 seconds**.
+- **TCP Messaging:** Messages are transmitted securely over TCP sockets.
+- **Peer List Management:** Peers are dynamically discovered and stored in **`peers.json`**.
 
-***** Menu *****
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-0. Quit
-Enter choice: Discovered peer Peer2 at 10.18.3.172:9090
-Discovered peer Peer3 at 10.18.3.172:7070
-10.18.3.172:8080 CryptoCrafters Hello Peer2
-2
-Connected Peers:
-10.18.3.172:8080
-10.18.3.172:9090
-10.18.3.172:7070
+## Database Management
+- **SQLite Database (`chat_history.db`)** stores messages with timestamps for persistence.
 
-***** Menu *****
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-Enter choice: 3
-(1, '10.18.3.172:8080', 'Hello Peer2', 'Wed Feb 19 02:21:59 2025')
+## Multi-threaded Execution
+- Runs parallel threads for:
+  - **TCP server** (handling incoming messages)
+  - **UDP peer discovery**
+  - **Monitoring active peers**
 
-***** Menu *****
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-0. Quit
-Enter choice:
+## How to Use
+### 1. Start a Peer
+Run the script with a username and port:
+```bash
+python chat.py --name Alice --port 5000
+```
 
-terminal 3
-(.venv) PS C:\Users\harsh\PyCharm_Project\p2p_chat> python chat.py --name Peer3 --port 7070
-Server listening on port 7070...
+### 2. Connect to Another Peer
+Use option **4** in the menu to connect to a known peer.
 
-** Menu **
-1. Send message
-2. Query active peers
-3. View chat history
-4. Connect to active peers
-0. Quit
-Enter choice: Discovered peer Peer3 at 10.18.3.172:7070
-10.18.3.172:8080 CryptoCrafters Connection established
+### 3. Send Messages
+Use option **1** to send a message to a peer.
+
+### 4. View Chat History
+Use option **3** to retrieve stored messages.
+
+### 5. Check Active Peers
+Use option **2** to list all discovered peers.
+
+### 6. Exit the Chat
+Type `exit` to disconnect from a peer.
+
+## Requirements
+Ensure you have the following dependencies installed:
+```bash
+pip install cryptography sqlite3 json socket threading argparse
+```
+
+## Contributing
+Feel free to contribute by submitting pull requests or reporting issues.
+
+## License
+This project is licensed under the **MIT License**.
