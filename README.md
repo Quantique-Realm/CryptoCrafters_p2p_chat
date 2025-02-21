@@ -59,18 +59,17 @@ Once the program starts, the following options are available:
 - **RSA Encryption**: RSA is used for secure key exchanges.
 - **Peer Authentication**: Peers must identify themselves using a team name.
 - **Encrypted Broadcasts**: UDP discovery messages are encrypted to prevent spoofing.
+  
+**Output Screenshots**
+## Terminal 1
+![WhatsApp Image 2025-02-21 at 4 31 20 PM](https://github.com/user-attachments/assets/2571a623-e6c2-4fa9-a9c7-79a352ee9e5d)
+![WhatsApp Image 2025-02-21 at 4 32 53 PM](https://github.com/user-attachments/assets/f3a11b90-7dc4-472a-906e-249845a53155)
 
-## Future Improvements
-- **File Sharing**: Add functionality to securely send and receive files.
-- **GUI Interface**: Develop a graphical interface for better user experience.
-- **Group Chat**: Support multi-user chat rooms.
-- **Mobile Support**: Expand functionality to mobile devices.
+## Terminal 2
+![WhatsApp Image 2025-02-21 at 4 41 48 PM](https://github.com/user-attachments/assets/fb27c4de-f874-4b3e-88af-0f760cda5f1e)
 
-## Contributing
-Pull requests are welcome! If you find a bug or have suggestions, feel free to create an issue.
-
-## License
-This project is licensed under the MIT License.
+## Terminal 3
+![WhatsApp Image 2025-02-21 at 4 42 38 PM](https://github.com/user-attachments/assets/4bf9fdbd-30bb-4035-aa76-7af15395601d)
 
 ---
-Developed by **CryptoCrafters** 🚀
+Developed by **CryptoCrafters** 
