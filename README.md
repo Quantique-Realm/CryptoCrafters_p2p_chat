@@ -41,7 +41,7 @@ Once the program starts, the following options are available:
 - **Send message**: Send an encrypted message to another peer.
 - **Query active peers**: List currently active peers.
 - **View chat history**: Retrieve stored messages from the database.
-- **Connect to a peer**: Establish a connection with a specific peer.(BONUS)
+- **Connect to a peer**: Establish a connection with a specific peer.**(BONUS)**
 - **Exit**: Stop the program and disconnect from the network.
 
 ## File Structure
