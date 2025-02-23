@@ -1,16 +1,16 @@
 # Peer-to-Peer Encrypted Chat Network
 
 A decentralized peer-to-peer (P2P) encrypted chat system using Python, allowing secure communication between peers over a network.
-Also handles the bonus feature connecting to peers.
+**Also handles the bonus feature connecting to peers.**
 
 ## Features
-- **Peer Discovery**: Uses UDP broadcasting to find and list active peers on the network.
+- **Peer Discovery**: Uses UDP broadcasting to find and list active peers on the network.(Extra)
 - **End-to-End Encryption**: Messages are encrypted using AES (Fernet) and RSA for secure transmission.
 - **TCP-Based Communication**: Sends and receives encrypted messages using TCP sockets.
 - **Chat History**: Stores messages in an SQLite database for retrieval.
 - **Dynamic Peer Management**: Updates and maintains a list of connected peers.
 - **Multi-Threaded Server**: Handles multiple connections simultaneously.
-- **Automatic Peer Status Check**: Detects inactive peers and removes them.
+- **Automatic Peer Status Check**: Detects inactive peers and removes them.(Extra)
 
 ## Installation
 ### Prerequisites
