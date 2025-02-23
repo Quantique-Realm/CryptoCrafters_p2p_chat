@@ -1,6 +1,7 @@
 # Peer-to-Peer Encrypted Chat Network
 
 A decentralized peer-to-peer (P2P) encrypted chat system using Python, allowing secure communication between peers over a network.
+Also handles the bonus feature connecting to peers.
 
 ## Features
 - **Peer Discovery**: Uses UDP broadcasting to find and list active peers on the network.
@@ -40,7 +41,7 @@ Once the program starts, the following options are available:
 - **Send message**: Send an encrypted message to another peer.
 - **Query active peers**: List currently active peers.
 - **View chat history**: Retrieve stored messages from the database.
-- **Connect to a peer**: Establish a connection with a specific peer.
+- **Connect to a peer**: Establish a connection with a specific peer.(BONUS)
 - **Exit**: Stop the program and disconnect from the network.
 
 ## File Structure
@@ -74,8 +75,8 @@ Once the program starts, the following options are available:
 ---
 Developed by **CryptoCrafters** 
 
--1.Abhiraj Kumar.
+-1.Abhiraj Kumar(mc230041001).
 
--2.Harsh Bhati.
+-2.Harsh Bhati(mems230005017).
 
--3.Buradkar Kalyani Bhalchandra.
+-3.Buradkar Kalyani Bhalchandra(cse230001017).
