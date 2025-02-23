@@ -73,6 +73,6 @@ Once the program starts, the following options are available:
 
 ---
 Developed by **CryptoCrafters** 
-1.Abhiraj Kumar 
-2.Harsh Bhati
-3.Buradkar Kalyani Bhalchandra
+-1.Abhiraj Kumar.
+-2.Harsh Bhati.
+-3.Buradkar Kalyani Bhalchandra.
