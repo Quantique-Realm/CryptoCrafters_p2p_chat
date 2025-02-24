@@ -19,14 +19,44 @@ Ensure you have Python installed along with the required dependencies.
 ```bash
 pip install cryptography pycryptodome
 pip install argparse
-```
-
-### Running the Peer
-Each user (peer) must specify their name and port to start the chat.
+``` 
+## Steps to run chat.py file
+#### **Step 1: Run the Peer**  
+To start a peer, use the following command:  
 
 ```bash
-python peer_chat.py --name "YourName" --port 5000
+python peer_chat.py --name <YourName> --port <PortNumber>
 ```
+
+For example:  
+
+```bash
+python peer_chat.py --name Alice --port 5000
+python peer_chat.py --name Bob --port 5001
+```
+
+Each peer must have a **unique name** and **port number**.  
+
+#### **Step 2: Using the Chat Application**  
+Once the peer is running, you will see a menu:  
+
+```
+***** Menu *****
+1. Send message  
+2. Query active peers  
+3. View chat history  
+4. Connect to active peer  
+0. Quit  
+```
+
+- **Option 1:** Enter the target peer's IP and port to send a message.  
+- **Option 2:** View the list of currently active peers.  
+- **Option 3:** Display saved chat history.  
+- **Option 4:** Manually connect to another peer.  
+- **Option 0:** Exit the application.  
+
+#### **Step 3: Stopping a Peer**  
+To stop a peer, type `"exit"` in the chat or press **Ctrl + C**.  
 
 ## How It Works
 1. **Key Generation**: RSA and AES keys are generated for secure communication.
@@ -34,15 +64,6 @@ python peer_chat.py --name "YourName" --port 5000
 3. **Message Encryption**: Messages are encrypted before sending and decrypted upon receipt.
 4. **Secure Communication**: Messages are transmitted over a TCP connection.
 5. **Chat History**: All messages are stored locally in an SQLite database.
-
-## Usage
-### Menu Options
-Once the program starts, the following options are available:
-- **Send message**: Send an encrypted message to another peer.
-- **Query active peers**: List currently active peers.
-- **View chat history**: Retrieve stored messages from the database.
-- **Connect to a peer**: Establish a connection with a specific peer.**(BONUS)**
-- **Exit**: Stop the program and disconnect from the network.
 
 ## File Structure
 ```
